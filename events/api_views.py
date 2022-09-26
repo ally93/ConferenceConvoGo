@@ -97,6 +97,7 @@ def api_list_locations(request):
         ]
     }
     """
+
     return JsonResponse({})
 
 
