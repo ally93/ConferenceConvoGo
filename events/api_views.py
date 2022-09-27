@@ -101,7 +101,7 @@ def api_list_locations(request):
                 "name": location.name,
                 "href": location.get_api_url(),
                 }
-                for location in Location.objects.all
+                for location in Location.objects.all()
                 ]
 
     return JsonResponse({"locations": response})
