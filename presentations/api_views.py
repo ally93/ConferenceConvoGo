@@ -4,6 +4,14 @@ from common.json import ModelEncoder
 from .models import Presentation
 
 
+# class PresentationListEncoder(ModelEncoder):
+#     model = Presentation
+#     properties = [
+#         "title",
+#         "status"
+#     ]
+
+
 def api_list_presentations(request, conference_id):
     """
     Lists the presentation titles and the link to the
@@ -26,6 +34,9 @@ def api_list_presentations(request, conference_id):
         ]
     }
     """
+    # presentations = Presentation.objects.filter(conference=conference_id)
+    # return JsonResponse({"presentations": presentations}, encoder=PresentationListEncoder)
+
     presentations = [
         {
             "title": p.title,
