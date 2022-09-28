@@ -46,6 +46,7 @@ class PresentationDetailEncoder(ModelEncoder):
         "title",
         "synopsis",
         "created",
+        # "status",
     ]
 
 

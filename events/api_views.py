@@ -117,6 +117,20 @@ def api_list_locations(request):
     return JsonResponse({"locations": response})
 
 
+class LocationDetailEncoder(ModelEncoder):
+    model = Location
+    properties = [
+        "name",
+        "city",
+        "room_count",
+        "created",
+        "updated",
+    ]
+
+    def get_extra_data(self, o):
+        return {"state": o.state.abbreviation}
+
+
 def api_show_location(request, pk):
     """
     Returns the details for the Location model specified
@@ -135,13 +149,14 @@ def api_show_location(request, pk):
     }
     """
     location = Location.objects.get(id=pk)
-    return JsonResponse(
-        {
-            "name": location.name,
-            "city": location.city,
-            "room_count": location.room_count,
-            "created": location.created,
-            "updated": location.updated,
-            "state": location.state.abbreviation,
-        }
-    )
+    return JsonResponse(location, LocationDetailEncoder, safe=False)
+    # return JsonResponse(
+    #     {
+    #         "name": location.name,
+    #         "city": location.city,
+    #         "room_count": location.room_count,
+    #         "created": location.created,
+    #         "updated": location.updated,
+    #         "state": location.state.abbreviation,
+    #     }
+    # )
