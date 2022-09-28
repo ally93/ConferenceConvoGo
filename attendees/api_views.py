@@ -1,9 +1,20 @@
 from django.http import JsonResponse
-
+from common.json import ModelEncoder
+from events.models import Conference
 from .models import Attendee
 
 
+class AttendeeListEncoder(ModelEncoder):
+    model = Attendee
+    properties = ["name"]
+
+
 def api_list_attendees(request, conference_id):
+    attendees = Attendee.objects.all()
+    return JsonResponse(
+        {"attendees": attendees},
+        encoder=AttendeeListEncoder,
+    )
     """
     Lists the attendees names and the link to the attendee
     for the specified conference id.
@@ -23,14 +34,33 @@ def api_list_attendees(request, conference_id):
         ]
     }
     """
-    response = [{
-                "name": attendee.name,
-                "href": attendee.get_api_url(),
-                }
-                for attendee in Attendee.objects.all()
-                ]
+    # response = [{
+    #             "name": attendee.name,
+    #             "href": attendee.get_api_url(),
+    #             }
+    #             for attendee in Attendee.objects.all()
+    #             ]
 
-    return JsonResponse({"attendees": response})
+    # return JsonResponse({"attendees": response})
+
+
+class ConferenceEncoder(ModelEncoder):
+    model = Conference
+    properties = ["name"]
+
+
+class AttendeeDetailEncoder(ModelEncoder):
+    model = Attendee
+    properties = [
+        "email",
+        "name",
+        "company_name",
+        "created",
+        "conference",
+    ]
+    encoders = {
+        "conference": ConferenceEncoder(),
+    }
 
 
 def api_show_attendee(request, pk):
@@ -54,13 +84,15 @@ def api_show_attendee(request, pk):
     }
     """
     attendee = Attendee.objects.get(id=pk)
-    return JsonResponse({
-        "email": attendee.email,
-        "name": attendee.name,
-        "company_name": attendee.company_name,
-        "created": attendee.created,
-        "conference": {
-            "name": attendee.conference.name,
-            "href": attendee.conference.get_api_url(),
-        }
-    })
+    return JsonResponse(attendee, AttendeeDetailEncoder, safe=False)
+    #     {
+    #     "email": attendee.email,
+    #     "name": attendee.name,
+    #     "company_name": attendee.company_name,
+    #     "created": attendee.created,
+    #     "conference": {
+    #         "name": attendee.conference.name,
+    #         "href": attendee.conference.get_api_url(),
+    #     }
+    # }
+    
