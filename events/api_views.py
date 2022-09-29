@@ -10,12 +10,32 @@ class ConferenceListEncoder(ModelEncoder):
     properties = ["name"]
 
 
+@require_http_methods(["GET", "POST"])
 def api_list_conferences(request):
-    conferences = Conference.objects.all()
-    return JsonResponse(
-        {"conferences": conferences},
-        encoder=ConferenceListEncoder,
-    )
+    if request.method == "GET":
+        conferences = Conference.objects.all()
+        return JsonResponse(
+            {"conferences": conferences},
+            encoder=ConferenceListEncoder,
+        )
+    else:
+        content = json.loads(request.body)
+    #    Get the location obj and put it in the content dict
+        try:
+            location = Location.objects.get(id=content["location"])
+            content["location"] = location
+        except Location.DoesNotExist:
+            return JsonResponse(
+                {"message": "Invalid location id"},
+                status=400,
+            )
+        
+        conference = Conference.objects.create(**content)
+        return JsonResponse(
+            conference,
+            ConferenceDetailEncoder,
+            safe=False,
+        )
 
 
 class LocationListEncoder(ModelEncoder):
@@ -40,10 +60,40 @@ class ConferenceDetailEncoder(ModelEncoder):
         "location": LocationListEncoder(),
     }
 
-
+@require_http_methods(["DELETE", "GET", "PUT"])
 def api_show_conference(request, pk):
-    conference = Conference.objects.get(id=pk)
-    return JsonResponse(conference, ConferenceDetailEncoder, safe=False)
+    if request.method == "GET":
+        conference = Conference.objects.get(id=pk)
+        return JsonResponse(conference, ConferenceDetailEncoder, safe=False)
+    elif request.method == "DELETE":
+        count, _ = Conference.objects.filter(id=pk).delete()
+        return JsonResponse(
+            {"deleted": count > 0}
+        )  # returns true if something is deleted
+    else:
+        # copied from create
+        content = json.loads(request.body)
+        try:
+            # new code
+            if "location" in content:
+                location = Location.objects.get(abbreviation=content["location"])
+                content["location"] = location
+        except Location.DoesNotExist:
+            return JsonResponse(
+                {"message": "Invalid state abbreviation"},
+                status=400,
+            )
+
+        # new code
+        Conference.objects.filter(id=pk).update(**content)
+
+        # copied from get detail
+        conference = Conference.objects.get(id=pk)
+        return JsonResponse(
+            conference,
+            encoder=ConferenceDetailEncoder,
+            safe=False,
+        )
 
 
 @require_http_methods(["GET", "POST"])
