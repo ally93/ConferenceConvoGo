@@ -88,7 +88,7 @@ class LocationDetailEncoder(ModelEncoder):
         return {"state": o.state.abbreviation}
 
 
-@require_http_methods(["DELETE", "GET", "POST"])
+@require_http_methods(["DELETE", "GET", "PUT"])
 def api_show_location(request, pk):
     if request.method == "GET":
         location = Location.objects.get(id=pk)
@@ -98,3 +98,6 @@ def api_show_location(request, pk):
         return JsonResponse(
             {"deleted": count > 0}
         )  # returns true if something is deleted
+    else:
+        pass
+
