@@ -5,6 +5,7 @@ from .models import Presentation, Status
 from django.views.decorators.http import require_http_methods
 import json
 from events.models import Conference
+
 # from attendees.models import Attendee
 # from attendees.api_views import AttendeeDetailEncoder
 
@@ -56,7 +57,6 @@ class PresentationDetailEncoder(ModelEncoder):
         "title",
         "synopsis",
         "created",
-        
     ]
     encoders = {
         "conference": ConferenceListEncoder(),
@@ -70,14 +70,16 @@ class PresentationDetailEncoder(ModelEncoder):
 def api_show_presentation(request, pk):
     if request.method == "GET":
         presentation = Presentation.objects.get(id=pk)
-        return JsonResponse(presentation, PresentationDetailEncoder, safe=False)
+        return JsonResponse(
+            presentation, PresentationDetailEncoder, safe=False
+        )
     elif request.method == "DELETE":
         count, _ = Presentation.objects.filter(id=pk).delete()
         return JsonResponse(
             {"deleted": count > 0}
         )  # returns true if something is deleted
     else:
-         # copied from create
+        # copied from create
         content = json.loads(request.body)
         try:
             # new code
@@ -91,7 +93,7 @@ def api_show_presentation(request, pk):
             )
         try:
             # new code
-            if "comference" in content:
+            if "conference" in content:
                 conference = Conference.objects.get(name=content["conference"])
                 content["conference"] = conference
         except Conference.DoesNotExist:
