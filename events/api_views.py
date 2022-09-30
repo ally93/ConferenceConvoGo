@@ -21,7 +21,7 @@ def api_list_conferences(request):
         )
     else:
         content = json.loads(request.body)
-    #    Get the location obj and put it in the content dict
+        #    Get the location obj and put it in the content dict
         try:
             location = Location.objects.get(id=content["location"])
             content["location"] = location
@@ -30,7 +30,7 @@ def api_list_conferences(request):
                 {"message": "Invalid location id"},
                 status=400,
             )
-        
+
         conference = Conference.objects.create(**content)
         return JsonResponse(
             conference,
@@ -56,20 +56,26 @@ class ConferenceDetailEncoder(ModelEncoder):
         "created",
         "updated",
         "location",
-        "weather",
     ]
     encoders = {
         "location": LocationListEncoder(),
     }
+
 
 @require_http_methods(["DELETE", "GET", "PUT"])
 def api_show_conference(request, pk):
     if request.method == "GET":
         conference = Conference.objects.get(id=pk)
         city = conference.location.city
-        state = conference.location.city
+        state = conference.location.state
         weather = get_weather_data(city, state)
-        return JsonResponse(conference, ConferenceDetailEncoder, safe=False)
+        return JsonResponse(
+            {"conference": conference, "weather": weather},
+            ConferenceDetailEncoder,
+            safe=False,
+        )
+
+        # return JsonResponse(conference, ConferenceDetailEncoder, safe=False)
     elif request.method == "DELETE":
         count, _ = Conference.objects.filter(id=pk).delete()
         return JsonResponse(
@@ -81,7 +87,9 @@ def api_show_conference(request, pk):
         try:
             # new code
             if "location" in content:
-                location = Location.objects.get(abbreviation=content["location"])
+                location = Location.objects.get(
+                    abbreviation=content["location"]
+                )
                 content["location"] = location
         except Location.DoesNotExist:
             return JsonResponse(
@@ -138,7 +146,7 @@ class LocationDetailEncoder(ModelEncoder):
         "room_count",
         "created",
         "updated",
-        "picture_url"
+        "picture_url",
     ]
 
     def get_extra_data(self, o):
@@ -179,4 +187,3 @@ def api_show_location(request, pk):
             encoder=LocationDetailEncoder,
             safe=False,
         )
-

@@ -5,7 +5,7 @@ import json
 
 def get_photo(city, state):
     # Create a dictionary for the headers to use in the request
-    headers = { "Authorization": PEXELS_API_KEY}
+    headers = {"Authorization": PEXELS_API_KEY}
     params = {
         "per_page": 1,
         "query": city + " " + state,
@@ -22,15 +22,19 @@ def get_photo(city, state):
         return {"picture_url": content["photos"][0]["src"]["original"]}
     except:
         return {"picture_url": None}
-        
+
 
 def get_weather_data(city, state):
     # headers = {"Authorization": OPEN_WEATHER_API_KEY}
-    payload = {"q": f"{city}, {state}", "appid": OPEN_WEATHER_API_KEY}
+    params = {
+        "q": f"{city}, {state}, USA",
+        "appid": OPEN_WEATHER_API_KEY,
+        "limit": 1,
+    }
     # Create the URL for the geocoding API with the city and state
     url = "http://api.openweathermap.org/geo/1.0/direct"
     # Make the request
-    response = requests.get(url, params=payload)
+    response = requests.get(url, params=params)
     # Parse the JSON response
     content = json.loads(response.content)
     # Get the latitude and longitude from the response
@@ -49,14 +53,14 @@ def get_weather_data(city, state):
     #   them in a dictionary
     # Return the dictionary
 
-    payload2 = {"lat": lat, "lon": lon, "appid": OPEN_WEATHER_API_KEY}
+    params2 = {"lat": lat, "lon": lon, "appid": OPEN_WEATHER_API_KEY}
     url2 = "https://api.openweathermap.org/data/2.5/weather"
-    response2 = requests.get(url2, params=payload2)
+    response2 = requests.get(url2, params=params2)
     content2 = json.loads(response2.content)
     try:
         return {
             "temp": content2["main"]["temp"],
-            "description": content2["weather"]["description"],
+            "description": content2["weather"][0]["description"],
         }
     except:
         return {"temp": None, "description": None}
