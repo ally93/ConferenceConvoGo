@@ -3,6 +3,7 @@ from common.json import ModelEncoder
 from .models import Conference, Location, State
 from django.views.decorators.http import require_http_methods
 import json
+from .acls import get_photo, get_weather_data
 
 
 class ConferenceListEncoder(ModelEncoder):
@@ -55,6 +56,7 @@ class ConferenceDetailEncoder(ModelEncoder):
         "created",
         "updated",
         "location",
+        "weather",
     ]
     encoders = {
         "location": LocationListEncoder(),
@@ -64,6 +66,9 @@ class ConferenceDetailEncoder(ModelEncoder):
 def api_show_conference(request, pk):
     if request.method == "GET":
         conference = Conference.objects.get(id=pk)
+        city = conference.location.city
+        state = conference.location.city
+        weather = get_weather_data(city, state)
         return JsonResponse(conference, ConferenceDetailEncoder, safe=False)
     elif request.method == "DELETE":
         count, _ = Conference.objects.filter(id=pk).delete()
@@ -115,7 +120,8 @@ def api_list_locations(request):
                 {"message": "Invalid state abbreviation"},
                 status=400,
             )
-
+        photo = get_photo(content["city"], content["state"].abbreviation)
+        content.update(photo)
         location = Location.objects.create(**content)
         return JsonResponse(
             location,
@@ -132,6 +138,7 @@ class LocationDetailEncoder(ModelEncoder):
         "room_count",
         "created",
         "updated",
+        "picture_url"
     ]
 
     def get_extra_data(self, o):
