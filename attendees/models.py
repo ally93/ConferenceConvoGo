@@ -25,6 +25,19 @@ class Attendee(models.Model):
     def get_api_url(self):
         return reverse("api_show_attendee", kwargs={"pk": self.pk})
 
+    """
+    If the Attendee instance already has a Badge associated with it through its badge property (created by the OneToOneField), then do nothing.
+Otherwise, create (and save, if necessary) a Badge instance with self as the value for the attendee property of the Badge.
+    """
+
+    def create_badge(self):
+        try:
+            self.badge 
+        except ObjectDoesNotExist:
+            Badge.objects.create(attendee=self)
+
+
+
 
 class Badge(models.Model):
     """
