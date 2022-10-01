@@ -97,7 +97,14 @@ def api_list_locations(request):
         ]
     }
     """
-    return JsonResponse({})
+    locations = [
+        {
+            "name": location.name,
+            "href": location.get_api_url(),
+        }
+        for location in Location.objects.all()
+        ]
+    return JsonResponse({"locations": locations})
 
 
 def api_show_location(request, pk):
