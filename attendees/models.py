@@ -1,5 +1,6 @@
 from django.db import models
 from django.urls import reverse
+from django.core.exceptions import ObjectDoesNotExist
 
 
 class Attendee(models.Model):
@@ -26,17 +27,17 @@ class Attendee(models.Model):
         return reverse("api_show_attendee", kwargs={"pk": self.pk})
 
     """
-    If the Attendee instance already has a Badge associated with it through its badge property (created by the OneToOneField), then do nothing.
-Otherwise, create (and save, if necessary) a Badge instance with self as the value for the attendee property of the Badge.
+    If the Attendee instance already has a Badge associated with it through its badge property 
+    (created by the OneToOneField), then do nothing.
+    Otherwise, create (and save, if necessary) 
+    a Badge instance with self as the value for the attendee property of the Badge.
     """
 
     def create_badge(self):
         try:
-            self.badge 
+            self.badge
         except ObjectDoesNotExist:
             Badge.objects.create(attendee=self)
-
-
 
 
 class Badge(models.Model):
