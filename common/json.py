@@ -1,5 +1,6 @@
 from json import JSONEncoder
 from datetime import datetime
+from django.db.models import QuerySet
 
 
 class DateEncoder(JSONEncoder):
@@ -10,7 +11,15 @@ class DateEncoder(JSONEncoder):
             return super().default(o)
 
 
-class ModelEncoder(DateEncoder, JSONEncoder):
+class QuerySetEncoder(JSONEncoder):
+    def default(self, o):
+        if isinstance(o, QuerySet):
+            return list(o)
+        else:
+            return super().default(o)
+
+
+class ModelEncoder(QuerySetEncoder, DateEncoder, JSONEncoder):
     def default(self, o):
         """
         #   if the object to decode is the same class as what's in the
@@ -28,6 +37,8 @@ class ModelEncoder(DateEncoder, JSONEncoder):
         """
         if isinstance(o, self.model):
             dict = {}
+            if hasattr(o, "get_api_url"):
+                dict["href"] = o.get_api_url()
             for property in self.properties:
                 value = getattr(o, property)
                 dict[property] = value

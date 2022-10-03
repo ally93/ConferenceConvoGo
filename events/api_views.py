@@ -4,6 +4,13 @@ from common.json import ModelEncoder
 from .models import Conference, Location
 
 
+class ConferenceListEncoder(ModelEncoder):
+    model = Conference
+    properties = [
+        "name"
+    ]
+
+
 def api_list_conferences(request):
     """
     Lists the conference names and the link to the conference.
@@ -23,16 +30,11 @@ def api_list_conferences(request):
         ]
     }
     """
-    response = []
     conferences = Conference.objects.all()
-    for conference in conferences:
-        response.append(
-            {
-                "name": conference.name,
-                "href": conference.get_api_url(),
-            }
+    return JsonResponse(
+        {"conferences": conferences},
+        encoder=ConferenceListEncoder,
         )
-    return JsonResponse({"conferences": response})
 
 
 class ConferenceDetailEncoder(ModelEncoder):
