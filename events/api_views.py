@@ -105,7 +105,7 @@ def api_list_locations(request):
             "href": location.get_api_url(),
         }
         for location in Location.objects.all()
-        ]
+    ]
     return JsonResponse({"locations": locations})
 
 
@@ -136,4 +136,4 @@ def api_show_location(request, pk):
             "updated": location.updated,
             "state": location.state.abbreviation,
         }
-        )
+    )
