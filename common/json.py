@@ -20,6 +20,8 @@ class QuerySetEncoder(JSONEncoder):
 
 
 class ModelEncoder(QuerySetEncoder, DateEncoder, JSONEncoder):
+    encoders = {}
+
     def default(self, o):
         """
         #   if the object to decode is the same class as what's in the
@@ -41,6 +43,9 @@ class ModelEncoder(QuerySetEncoder, DateEncoder, JSONEncoder):
                 dict["href"] = o.get_api_url()
             for property in self.properties:
                 value = getattr(o, property)
+                if property in self.encoders:
+                    encoder = self.encoders[property]
+                    value = encoder.default(value)
                 dict[property] = value
 
             return dict
