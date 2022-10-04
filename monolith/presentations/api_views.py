@@ -5,6 +5,7 @@ from .models import Presentation, Status
 from django.views.decorators.http import require_http_methods
 import json
 from events.models import Conference
+import pika
 
 # from attendees.models import Attendee
 # from attendees.api_views import AttendeeDetailEncoder
@@ -119,19 +120,45 @@ def api_show_presentation(request, pk):
 def api_approve_presentation(request, pk):
     presentation = Presentation.objects.get(id=pk)
     presentation.approve()
-    return JsonResponse(
+    presentationJson = JsonResponse(
         presentation,
         encoder=PresentationDetailEncoder,
         safe=False,
     )
+    producer(presentation, "presentation_approvals")
+    return presentationJson
 
 
 @require_http_methods(["PUT"])
 def api_reject_presentation(request, pk):
     presentation = Presentation.objects.get(id=pk)
     presentation.reject()
-    return JsonResponse(
+    presentationJson = JsonResponse(
         presentation,
         encoder=PresentationDetailEncoder,
         safe=False,
     )
+    producer(presentation, 'presentation_rejections')
+    return presentationJson
+
+
+class PresentationProducerEncoder(ModelEncoder):
+    model = Presentation
+    properties = [
+        "presenter_name",
+        "presenter_email",
+        "title",
+    ]
+
+
+def producer(data, q_name):
+    parameters = pika.ConnectionParameters(host="rabbitmq")
+    connection = pika.BlockingConnection(parameters)
+    channel = connection.channel()
+    channel.queue_declare(queue=q_name)
+    channel.basic_publish(
+        exchange="",
+        routing_key=q_name,
+        body=json.dumps(data, cls=PresentationProducerEncoder),
+    )
+    connection.close()
