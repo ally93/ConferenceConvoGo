@@ -20,10 +20,12 @@ services:
       - ./attendees_microservice:/app
   attendees_account_info:
     build:
-      context: ./attendees_account_info
+      context: ./attendees_microservice
       dockerfile: ./Dockerfile.account_info.dev
+    depends_on:
+      - rabbitmq
     volumes:
-      - ./attendees_account_info:/app
+      - ./attendees_microservice:/app
   presentation_workflow:
     build:
       context: ./presentation_workflow
