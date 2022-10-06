@@ -20,6 +20,7 @@ from attendees.models import AccountVO
 # Declare a function to update the AccountVO object (ch, method, properties, body)
 def update_accountVO(ch, method, properties, body):
     content = json.loads(body)
+    print("Got new account ", content)
     # first_name = content["first_name"]
     # last_name = content["last_name"]
     # email = content["email"]
@@ -61,31 +62,28 @@ while True:
             )
             # do a basic_consume for the queue name that calls function above
             channel.basic_consume(
-                exchange="account_info",
+                queue="",
                 on_message_callback=update_accountVO,
                 auto_ack=True,
             )
-            #tell the channel to start consuming
+            print("Starting to consume...")
+            # tell the channel to start consuming
             channel.start_consuming()
 
-        # if __name__ == "__main__":
-        #     try:
-        #         main()
+        if __name__ == "__main__":
+            try:
+                main()
 
-        #     except KeyboardInterrupt:
-        #         print("Interrupted")
-        #         try:
-        #             sys.exit(0)
-        #         except SystemExit:
-        #             os._exit(0)
+            except KeyboardInterrupt:
+                print("Interrupted")
+                try:
+                    sys.exit(0)
+                except SystemExit:
+                    os._exit(0)
 
     #   except AMQPConnectionError
-#       print that it could not connect to RabbitMQ
-#       have it sleep for a couple of seconds
+    #       print that it could not connect to RabbitMQ
+    #       have it sleep for a couple of seconds
     except AMQPConnectionError:
         print("Could not connect to RabbitMQ")
         time.sleep(2.0)
-
-
-
-
