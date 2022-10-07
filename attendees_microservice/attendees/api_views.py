@@ -63,7 +63,6 @@ class AttendeeDetailEncoder(ModelEncoder):
 
     def get_extra_data(self, o):
         # Get the count of AccountVO objects with email equal to o.email
-        print('o.emaillllll ', o.email)
         count = AccountVO.objects.filter(email=o.email).count()
         # Return a dictionary with "has_account": True if count > 0
         val = {"has_account": count > 0}
